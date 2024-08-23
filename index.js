@@ -149,13 +149,80 @@ function tasks(user) {
 	this.user = user;
 }
 
-tasks.prototype.loadListTasks = function () {};
+tasks.prototype.loadListTasks = function () {
+	let listTasks = JSON.parse(localStorage.getItem('listTasks') || '[]');
+	this.listTasks = listTasks;
+};
 
-tasks.prototype.addTask = function (todoValue) {};
+tasks.prototype.addTask = function (todoValue) {
+	let newTask = {
+		id: generateUID(),
+		name: todoValue,
+		user_id: user.id,
+		completed: filterState.UNDONE
+	};
+	this.listTasks.push(newTask);
+	localStorage.setItem('listTasks', JSON.stringify(this.listTasks));
+	addTodoButton.classList.remove(valueConstant.active);
+	imageChibi.style.animation = 'chibi-swinging 3s linear 0s 1 normal none';
+	setTimeout(function() {
+		imageChibi.style.animation = valueConstant.null;
+	}, 3100);
+	this.loadListTasks();
+	this.renderListTasks(this.listTasks);
+};
 
-tasks.prototype.renderListTasks = function (listTasks) {};
+tasks.prototype.renderListTasks = function (listTasks) {
+	if (listTasks) {
+		let tasks = listTasks.filter(
+			(task) => task.user_id === user.id
+		);
+	}
+	pendingTasksCount.textContent = tasks?.length || 0;
+	if (tasks?.length > 0) {
+		todoList.innerHTML = tasks.map((item) => {
+			return `<li>
+				<div class="id-${item.id}">
+					<input 
+						onchange="userTasks.toggleCompleted("${item.id}")"
+						type="checkbox" ${item.completed === filterState.DONE ? 'checked' : valueConstant.null}>
+					<p>${item.name}</p>	
+					<span class="icon icon-edit" onclick="userTasks.deleteTask('${item.id}')">
+						<i class="fas fa-trash"></i>
+					</span>				
+				</div>
+			</li>`
+		})
+		.join(valueConstant.active)
+		deleteAllButton.classList.add(valueConstant.active);
+	} else {
+		todoList.innerHTML = `Nothing to show here. Please add task`
+		deleteAllButton.classList.remove(valueConstant.active);
+	}
+};
 
-tasks.prototype.editTask = function (id) {};
+tasks.prototype.editTask = function (id) {
+	const todoItem = $(`.id-${id}`);
+	const task = this.listTasks.find((task) => task.id === id);
+	if (task) {
+		const existingValue = task.name;
+		const inputElement = document.createElement('input');
+		inputElement.value = existingValue;
+		todoItem.replaceWith(inputElement);
+		inputElement.focus();
+
+		const that = this;
+		inputElement.addEventListener('blur', function() {
+			const updatedValue = inputElement.value.trim();
+			if (updatedValue) {
+				that.listTasks.find((task) => task.id === id).name = updatedValue;
+				localStorage.setItem('listTask', JSON.stringify(that.listTasks));
+				that.loadListTasks();
+				that.renderListTasks(that.listTasks)
+			}
+		});
+	}
+};
 
 tasks.prototype.deleteTask = function (id) {};
 
@@ -163,9 +230,20 @@ tasks.prototype.deleteAllTask = function () {};
 
 tasks.prototype.toggleCompleted = function (id) {};
 
-inputTodo.addEventListener('keyup', function () {});
+inputTodo.addEventListener('keyup', function () {
+	let enteredValues = inputTodo.value.trim();
+	if (enteredValues) {
+		addTodoButton.classList.add(valueConstant.active);
+	} else {
+		addTodoButton.classList.remove(valueConstant.active);
+	}
+});
 
-addTodoBtn.addEventListener('click', function () {});
+addTodoButton.addEventListener('click', function () {
+	let todoValue = inputTodo.value.trim();
+	userTasks.addTask(todoValue);
+	inputTodo.value = valueConstant.null;
+});
 
 deleteAllBtn.addEventListener('click', function () {});
 
