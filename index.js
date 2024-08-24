@@ -232,8 +232,9 @@ tasks.prototype.editTask = function (id) {
 		inputElement.addEventListener('blur', function () {
 			const updatedValue = inputElement.value.trim();
 			if (updatedValue) {
-				that.listTasks.find((task) => task.id === id).name = updatedValue;
-				localStorage.setItem('listTask', JSON.stringify(that.listTasks));
+				const taskCheck = that.listTasks.find((task) => task.id === id);
+				taskCheck.name = updatedValue;
+				localStorage.setItem('listTasks', JSON.stringify(that.listTasks));
 				that.loadListTasks();
 				that.renderListTasks(that.listTasks);
 			}
