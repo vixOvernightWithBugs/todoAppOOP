@@ -42,7 +42,7 @@ registerForm.addEventListener('submit', function (event) {
 	}
 
 	if (!validateEmail(emailInputRegister.value)) {
-		alert('Please enter correctly email!');
+		alert('Please enter a valid email address. Email must be in the format name@domain.com.');
 		emailInputRegister.value = valueConstant.null;
 		passwordRegisterField.value = valueConstant.null;
 		rePasswordRegisterField.value = valueConstant.null;
@@ -141,27 +141,40 @@ window.addEventListener('DOMContentLoaded', function () {
 	}
 });
 
-function loadUsers() {}
+function loadUsers() {
+	var users = JSON.parse(localStorage.getItem('users') || '[]')
+	return users;
+}
 
-function checkUserIsOnline(user = valueConstant.null) {}
+function checkUserIsOnline(user = valueConstant.null) {
+	if (user) {
+		notificationUser.style.display = valueConstant.flex;
+		logoutButton.classList.add(valueConstant.active)
+		userActive.innerHTML = user ?. email;
+	} else {
+		notificationUser.style.display = valueConstant.none;
+		logoutButton.classList.remove(valueConstant.active)
+		userActive.innerHTML = valueConstant.null;
+	}
+}
 
 function tasks(user) {
 	this.user = user;
 }
 
 tasks.prototype.loadListTasks = function () {
-	let listTasks = JSON.parse(localStorage.getItem('listTasks') || '[]');
+	var listTasks = JSON.parse(localStorage.getItem('listTasks') || '[]');
 	this.listTasks = listTasks;
 };
 
 tasks.prototype.addTask = function (todoValue) {
-	let newTask = {
+	var newTask = {
 		id: generateUID(),
 		name: todoValue,
 		user_id: user.id,
 		completed: filterState.UNDONE
 	};
-	this.listTasks.push(newTask);
+	this.listTasks.unshift(newTask);
 	localStorage.setItem('listTasks', JSON.stringify(this.listTasks));
 	addTodoButton.classList.remove(valueConstant.active);
 	imageChibi.style.animation = 'chibi-swinging 3s linear 0s 1 normal none';
@@ -172,34 +185,37 @@ tasks.prototype.addTask = function (todoValue) {
 	this.renderListTasks(this.listTasks);
 };
 
-tasks.prototype.renderListTasks = function (listTasks) {
+tasks.prototype.renderListTasks = function(listTasks) {
 	if (listTasks) {
-		let tasks = listTasks.filter(
-			(task) => task.user_id === user.id
-		);
+	  var tasks = listTasks.filter( 
+		(task) => task.user_id === user.id
+	  ) ;
 	}
-	pendingTasksCount.textContent = tasks?.length || 0;
-	if (tasks?.length > 0) {
+	  pendingTasksCount.textContent = tasks?.length || 0;
+	  if (tasks?.length > 0) {
 		todoList.innerHTML = tasks.map((item) => {
-			return `<li>
-				<div class="id-${item.id}">
-					<input 
-						onchange="userTasks.toggleCompleted("${item.id}")"
-						type="checkbox" ${item.completed === filterState.DONE ? 'checked' : valueConstant.null}>
-					<p>${item.name}</p>	
-					<span class="icon icon-edit" onclick="userTasks.deleteTask('${item.id}')">
-						<i class="fas fa-trash"></i>
-					</span>				
-				</div>
-			</li>`
-		})
-		.join(valueConstant.active)
-		deleteAllButton.classList.add(valueConstant.active);
-	} else {
-		todoList.innerHTML = `Nothing to show here. Please add task`
-		deleteAllButton.classList.remove(valueConstant.active);
-	}
-};
+		  return `<li>
+			<div class="id-${item.id}">
+			  <input onchange="userTasks.toggleCompleted('${item.id}')" 
+			  type="checkbox" ${item.completed === filterState.DONE ? 'checked' : valueConstant.null }>
+			  <p>${item.name}</p>
+			  <span class ="icon icon-edit" onclick="userTasks.editTask('${item.id}') ">
+				<i class="fa-solid fa-pen-to-square"></i>
+			  </span>
+			  <span class="icon" onclick="userTasks.deleteTask('${item.id}')">
+				<i class="fas fa-trash"></i>
+			  </span>
+			</div>
+		  </li>`
+		  })
+		  .join(valueConstant.null);
+		  deleteAllTasksButton.classList.add(valueConstant.active);
+		} else {
+		  todoList.innerHTML = `Nothing to show here. Please add task`
+		  deleteAllTasksButton.classList.remove(valueConstant.active);
+	  
+		}
+  };
 
 tasks.prototype.editTask = function (id) {
 	const todoItem = $(`.id-${id}`);
@@ -224,11 +240,50 @@ tasks.prototype.editTask = function (id) {
 	}
 };
 
-tasks.prototype.deleteTask = function (id) {};
+tasks.prototype.deleteTask = function (id) {
+	const updateListTasks = this.listTasks.filter((task) => task.id !== id) 
+	if (updateListTasks) {
+		localStorage.setItem('listTasks', JSON.stringify(updateListTasks));
+		this.loadListTasks();
+		this.renderListTasks(this.listTasks);
+	}
+};
 
-tasks.prototype.deleteAllTask = function () {};
+tasks.prototype.deleteAllTask = function() {
+  if (confirm('Delete All?')) {
+    var updatedListTasks = this.listTasks.filter( 
+      (task) => task.user_id !== user.id
+    );
+    if (updatedListTasks)  {
+      imageChibi.style.animation = 'chibi-angrying 1s linear 0s 1 normal none';
+      setTimeout(function() {
+        imageChibi.style.animation = valueConstant.null;
+      }, 3100) ;
+      localStorage.setItem('listTasks', JSON.stringify(updatedListTasks))
+      this.loadListTasks()
+      this.renderListTasks(this.listTasks)
+    }
+  }
+};
 
-tasks.prototype.toggleCompleted = function (id) {};
+tasks.prototype.toggleCompleted = function (id) {
+	const task = this.listTasks.find((task) => task.id === id);
+	if (task) {
+	  if (task.completed === filterState.UNDONE) {
+		task.completed = filterState.DONE;
+		this.listTasks.splice(this.listTasks.indexOf(task), 1);
+		this.listTasks.push(task);
+	  } else if (task.completed === filterState.DONE) {
+		task.completed = filterState.UNDONE;
+		this.listTasks.splice(this.listTasks.indexOf(task), 1);
+		this.listTasks.unshift(task);
+	  }
+	  localStorage.setItem('listTasks', JSON.stringify(this.listTasks));
+	  this.loadListTasks();
+	  filterStatus.value = filterState.ALL;
+	  filterStatus.dispatchEvent(new Event('change'));
+	}
+  };
 
 inputTodo.addEventListener('keyup', function () {
 	let enteredValues = inputTodo.value.trim();
@@ -245,8 +300,28 @@ addTodoButton.addEventListener('click', function () {
 	inputTodo.value = valueConstant.null;
 });
 
-deleteAllBtn.addEventListener('click', function () {});
+deleteAllTasksButton.addEventListener('click', function () {
+	userTasks.deleteAllTask();
+});
 
-filterStatus.addEventListener('change', function () {});
+filterStatus.addEventListener('change', function() {
+	const filterStatusValue = filterStatus.value;
+	if (filterStatusValue === filterState.DONE) {
+	  userTasks.renderListTasks(userTasks.listTasks.filter((task)=>
+		task.completed === filterState.DONE));
+	} else if (filterStatusValue === filterState.UNDONE) {
+	  userTasks.renderListTasks(userTasks.listTasks.filter((task)=> 
+		task.completed === filterState.UNDONE));
+	} else {
+	  userTasks.renderListTasks(userTasks.listTasks);
+	}
+  });
 
-logoutBtn.addEventListener('click', function () {});
+  logoutButton.addEventListener('click', function() {
+	localStorage.removeItem('rememberedUser');
+	sessionStorage.removeItem('currentSessionUser');
+	userTasks = valueConstant.null
+	checkUserIsOnline();
+	mainForm.style.display = valueConstant.flex;
+	mainContent.style.display = valueConstant.none;
+  });
