@@ -26,15 +26,15 @@ const deleteAllTasksButton = $('#delete-all-tasks-button');
 const pendingTasksCount = $('.pending-task');
 const todoList = $('.todo-list');
 const filterStatus = $('#filter');
-const filterState = {
+const filterState = Object.freeze({
 	DONE: 'done',
 	UNDONE: 'undone',
 	ALL: 'all',
-};
-const valueConstant = {
+});
+const valueConstant = Object.freeze({
 	none: 'none',
 	null: '',
 	block: 'block',
 	flex: 'flex',
 	active: 'active',
-};
+});
