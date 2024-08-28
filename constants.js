@@ -32,9 +32,9 @@ const filterState = Object.freeze({
 	ALL: 'all',
 });
 const valueConstant = Object.freeze({
-	none: 'none',
-	null: '',
-	block: 'block',
-	flex: 'flex',
-	active: 'active',
+	NONE: 'none',
+	NULL: '',
+	BLOCK: 'block',
+	FLEX: 'flex',
+	ACTIVE: 'active',
 });

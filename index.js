@@ -10,16 +10,16 @@ function validateEmail(email) {
 }
 
 function checkAvailableFormAndDisplay() {
-	if (registerForm.style.display !== valueConstant.none) {
-		registerForm.style.display = valueConstant.none;
-		askUserRegister.style.display = valueConstant.none;
-		loginForm.style.display = valueConstant.flex;
-		askUserLogin.style.display = valueConstant.flex;
+	if (registerForm.style.display !== valueConstant.NONE) {
+		registerForm.style.display = valueConstant.NONE;
+		askUserRegister.style.display = valueConstant.NONE;
+		loginForm.style.display = valueConstant.FLEX;
+		askUserLogin.style.display = valueConstant.FLEX;
 	} else {
-		loginForm.style.display = valueConstant.none;
-		askUserLogin.style.display = valueConstant.none;
-		registerForm.style.display = valueConstant.flex;
-		askUserRegister.style.display = valueConstant.flex;
+		loginForm.style.display = valueConstant.NONE;
+		askUserLogin.style.display = valueConstant.NONE;
+		registerForm.style.display = valueConstant.FLEX;
+		askUserRegister.style.display = valueConstant.FLEX;
 	}
 }
 
@@ -36,8 +36,8 @@ registerForm.addEventListener('submit', function (event) {
 
 	if (passwordRegisterField.value !== rePasswordRegisterField.value) {
 		alert('Please re-enter the password!');
-		passwordRegisterField.value = valueConstant.null;
-		rePasswordRegisterField.value = valueConstant.null;
+		passwordRegisterField.value = valueConstant.NULL;
+		rePasswordRegisterField.value = valueConstant.NULL;
 		return;
 	}
 
@@ -45,9 +45,9 @@ registerForm.addEventListener('submit', function (event) {
 		alert(
 			'Please enter a valid email address. Email must be in the format name@domain.com.'
 		);
-		emailInputRegister.value = valueConstant.null;
-		passwordRegisterField.value = valueConstant.null;
-		rePasswordRegisterField.value = valueConstant.null;
+		emailInputRegister.value = valueConstant.NULL;
+		passwordRegisterField.value = valueConstant.NULL;
+		rePasswordRegisterField.value = valueConstant.NULL;
 		return;
 	}
 
@@ -57,9 +57,9 @@ registerForm.addEventListener('submit', function (event) {
 
 	if (userCheck) {
 		alert('Already have this email registered!');
-		emailInputRegister.value = valueConstant.null;
-		passwordRegisterField.value = valueConstant.null;
-		rePasswordRegisterField.value = valueConstant.null;
+		emailInputRegister.value = valueConstant.NULL;
+		passwordRegisterField.value = valueConstant.NULL;
+		rePasswordRegisterField.value = valueConstant.NULL;
 		return;
 	}
 
@@ -72,9 +72,9 @@ registerForm.addEventListener('submit', function (event) {
 	users.push(newUser);
 	localStorage.setItem('users', JSON.stringify(users));
 	alert('Register success!');
-	emailInputRegister.value = valueConstant.null;
-	passwordRegisterField.value = valueConstant.null;
-	rePasswordRegisterField.value = valueConstant.null;
+	emailInputRegister.value = valueConstant.NULL;
+	passwordRegisterField.value = valueConstant.NULL;
+	rePasswordRegisterField.value = valueConstant.NULL;
 	registerLink.click();
 });
 
@@ -103,19 +103,19 @@ loginForm.addEventListener('submit', function (event) {
 		}
 		imageChibi.style.animation = 'chibi-jumping 3s linear 0s 1 normal none';
 		setTimeout(function () {
-			imageChibi.style.animation = valueConstant.null;
+			imageChibi.style.animation = valueConstant.NULL;
 		}, 3100);
-		mainForm.style.display = valueConstant.none;
-		mainContent.style.display = valueConstant.block;
-		passwordLoginField.value = valueConstant.null;
+		mainForm.style.display = valueConstant.NONE;
+		mainContent.style.display = valueConstant.BLOCK;
+		passwordLoginField.value = valueConstant.NULL;
 		userTasks = new tasks(user);
 		checkUserIsOnline(user);
 		userTasks.loadListTasks();
 		userTasks.renderListTasks(userTasks.listTasks);
 	} else {
 		alert('User not found or Email/Password incorrect!');
-		emailInputLogin.value = valueConstant.null;
-		passwordLoginField.value = valueConstant.null;
+		emailInputLogin.value = valueConstant.NULL;
+		passwordLoginField.value = valueConstant.NULL;
 		return;
 	}
 });
@@ -128,13 +128,13 @@ window.addEventListener('DOMContentLoaded', function () {
 	users = loadUsers();
 	if (rememberedUser || currentSessionUser) {
 		// display page Login / Signup to none
-		mainForm.style.display = valueConstant.none;
+		mainForm.style.display = valueConstant.NONE;
 		// display toDoApp
-		mainContent.style.display = valueConstant.block;
+		mainContent.style.display = valueConstant.BLOCK;
 		// loading current user & toDoTask ( when using react => useEffect())
 		user = rememberedUser || currentSessionUser;
 		checkUserIsOnline(user);
-		userTasks = new tasks(user);
+		userTasks = new userTasksManager(user);
 		userTasks.loadListTasks();
 		userTasks.renderListTasks(userTasks.listTasks);
 	} else {
@@ -147,28 +147,30 @@ function loadUsers() {
 	return users;
 }
 
-function checkUserIsOnline(user = valueConstant.null) {
+function checkUserIsOnline(user = valueConstant.NULL) {
 	if (user) {
-		notificationUser.style.display = valueConstant.flex;
-		logoutButton.classList.add(valueConstant.active);
+		notificationUser.style.display = valueConstant.FLEX;
+		logoutButton.classList.add(valueConstant.ACTIVE);
 		userActive.innerHTML = user?.email;
 	} else {
-		notificationUser.style.display = valueConstant.none;
-		logoutButton.classList.remove(valueConstant.active);
-		userActive.innerHTML = valueConstant.null;
+		notificationUser.style.display = valueConstant.NONE;
+		logoutButton.classList.remove(valueConstant.ACTIVE);
+		userActive.innerHTML = valueConstant.NULL;
 	}
 }
 
-function tasks(user) {
-	this.user = user;
+class userTasksManager {
+	constructor(user) {
+		this.user = user
+	}
 }
 
-tasks.prototype.loadListTasks = function () {
+userTasksManager.prototype.loadListTasks = function () {
 	var listTasks = JSON.parse(localStorage.getItem('listTasks') || '[]');
 	this.listTasks = listTasks;
 };
 
-tasks.prototype.addTask = function (todoValue) {
+userTasksManager.prototype.addTask = function (todoValue) {
 	var newTask = {
 		id: generateUID(),
 		name: todoValue,
@@ -177,16 +179,16 @@ tasks.prototype.addTask = function (todoValue) {
 	};
 	this.listTasks.unshift(newTask);
 	localStorage.setItem('listTasks', JSON.stringify(this.listTasks));
-	addTodoButton.classList.remove(valueConstant.active);
+	addTodoButton.classList.remove(valueConstant.ACTIVE);
 	imageChibi.style.animation = 'chibi-swinging 3s linear 0s 1 normal none';
 	setTimeout(function () {
-		imageChibi.style.animation = valueConstant.null;
+		imageChibi.style.animation = valueConstant.NULL;
 	}, 3100);
 	this.loadListTasks();
 	this.renderListTasks(this.listTasks);
 };
 
-tasks.prototype.renderListTasks = function (listTasks) {
+userTasksManager.prototype.renderListTasks = function (listTasks) {
 	if (listTasks) {
 		var tasks = listTasks.filter((task) => task.user_id === user.id);
 	}
@@ -198,7 +200,7 @@ tasks.prototype.renderListTasks = function (listTasks) {
 			<div class="id-${item.id}">
 			  <input onchange="userTasks.toggleCompleted('${item.id}')" 
 			  type="checkbox" ${
-					item.completed === filterState.DONE ? 'checked' : valueConstant.null
+					item.completed === filterState.DONE ? 'checked' : valueConstant.NULL
 				}>
 			  <p>${item.name}</p>
 			  <span class ="icon icon-edit" onclick="userTasks.editTask('${item.id}') ">
@@ -210,15 +212,15 @@ tasks.prototype.renderListTasks = function (listTasks) {
 			</div>
 		  </li>`;
 			})
-			.join(valueConstant.null);
-		deleteAllTasksButton.classList.add(valueConstant.active);
+			.join(valueConstant.NULL);
+		deleteAllTasksButton.classList.add(valueConstant.ACTIVE);
 	} else {
 		todoList.innerHTML = `Nothing to show here. Please add task`;
-		deleteAllTasksButton.classList.remove(valueConstant.active);
+		deleteAllTasksButton.classList.remove(valueConstant.ACTIVE);
 	}
 };
 
-tasks.prototype.editTask = function (id) {
+userTasksManager.prototype.editTask = function (id) {
 	const todoItem = $(`.id-${id}`);
 	const task = this.listTasks.find((task) => task.id === id);
 	if (task) {
@@ -242,7 +244,7 @@ tasks.prototype.editTask = function (id) {
 	}
 };
 
-tasks.prototype.deleteTask = function (id) {
+userTasksManager.prototype.deleteTask = function (id) {
 	const updateListTasks = this.listTasks.filter((task) => task.id !== id);
 	if (updateListTasks) {
 		localStorage.setItem('listTasks', JSON.stringify(updateListTasks));
@@ -251,7 +253,7 @@ tasks.prototype.deleteTask = function (id) {
 	}
 };
 
-tasks.prototype.deleteAllTask = function () {
+userTasksManager.prototype.deleteAllTask = function () {
 	if (confirm('Delete All?')) {
 		var updatedListTasks = this.listTasks.filter(
 			(task) => task.user_id !== user.id
@@ -259,7 +261,7 @@ tasks.prototype.deleteAllTask = function () {
 		if (updatedListTasks) {
 			imageChibi.style.animation = 'chibi-angrying 1s linear 0s 1 normal none';
 			setTimeout(function () {
-				imageChibi.style.animation = valueConstant.null;
+				imageChibi.style.animation = valueConstant.NULL;
 			}, 3100);
 			localStorage.setItem('listTasks', JSON.stringify(updatedListTasks));
 			this.loadListTasks();
@@ -268,7 +270,7 @@ tasks.prototype.deleteAllTask = function () {
 	}
 };
 
-tasks.prototype.toggleCompleted = function (id) {
+userTasksManager.prototype.toggleCompleted = function (id) {
 	const task = this.listTasks.find((task) => task.id === id);
 	if (task) {
 		if (task.completed === filterState.UNDONE) {
@@ -290,16 +292,16 @@ tasks.prototype.toggleCompleted = function (id) {
 inputTodo.addEventListener('keyup', function () {
 	let enteredValues = inputTodo.value.trim();
 	if (enteredValues) {
-		addTodoButton.classList.add(valueConstant.active);
+		addTodoButton.classList.add(valueConstant.ACTIVE);
 	} else {
-		addTodoButton.classList.remove(valueConstant.active);
+		addTodoButton.classList.remove(valueConstant.ACTIVE);
 	}
 });
 
 addTodoButton.addEventListener('click', function () {
 	let todoValue = inputTodo.value.trim();
 	userTasks.addTask(todoValue);
-	inputTodo.value = valueConstant.null;
+	inputTodo.value = valueConstant.NULL;
 });
 
 deleteAllTasksButton.addEventListener('click', function () {
@@ -326,8 +328,8 @@ filterStatus.addEventListener('change', function () {
 logoutButton.addEventListener('click', function () {
 	localStorage.removeItem('rememberedUser');
 	sessionStorage.removeItem('currentSessionUser');
-	userTasks = valueConstant.null;
+	userTasks = valueConstant.NULL;
 	checkUserIsOnline();
-	mainForm.style.display = valueConstant.flex;
-	mainContent.style.display = valueConstant.none;
+	mainForm.style.display = valueConstant.FLEX;
+	mainContent.style.display = valueConstant.NONE;
 });
