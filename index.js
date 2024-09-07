@@ -3,12 +3,6 @@ function generateUID() {
 	return Date.now().toString(36) + Math.random().toString(36).substring(2, 11);
 }
 
-function validateEmail(email) {
-	return email.match(
-		/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-	);
-}
-
 function checkAvailableFormAndDisplay() {
 	if (registerForm.style.display !== valueConstant.NONE) {
 		registerForm.style.display = valueConstant.NONE;
@@ -35,16 +29,15 @@ registerForm.addEventListener('submit', function (event) {
 	event.preventDefault();
 
 	if (passwordRegisterField.value !== rePasswordRegisterField.value) {
-		alert('Please re-enter the password!');
+		alert(messages.PASSWORD_DOES_NOT_MATCH);
+
 		passwordRegisterField.value = valueConstant.NULL;
 		rePasswordRegisterField.value = valueConstant.NULL;
 		return;
 	}
 
 	if (!validateEmail(emailInputRegister.value)) {
-		alert(
-			'Please enter a valid email address. Email must be in the format name@domain.com.'
-		);
+		alert(messages.INVALID_EMAIL);
 		emailInputRegister.value = valueConstant.NULL;
 		passwordRegisterField.value = valueConstant.NULL;
 		rePasswordRegisterField.value = valueConstant.NULL;
@@ -56,7 +49,7 @@ registerForm.addEventListener('submit', function (event) {
 	);
 
 	if (userCheck) {
-		alert('Already have this email registered!');
+		alert(messages.EMAIL_IS_ALREADY_REGISTERED);
 		emailInputRegister.value = valueConstant.NULL;
 		passwordRegisterField.value = valueConstant.NULL;
 		rePasswordRegisterField.value = valueConstant.NULL;
@@ -71,7 +64,7 @@ registerForm.addEventListener('submit', function (event) {
 
 	users.push(newUser);
 	localStorage.setItem('users', JSON.stringify(users));
-	alert('Register success!');
+	alert(messages.REGISTER_SUCCESSFULLY);
 	emailInputRegister.value = valueConstant.NULL;
 	passwordRegisterField.value = valueConstant.NULL;
 	rePasswordRegisterField.value = valueConstant.NULL;
@@ -82,11 +75,11 @@ loginForm.addEventListener('submit', function (event) {
 	event.preventDefault();
 
 	if (!validateEmail(emailInputLogin.value)) {
-		alert('Please enter correctly email!');
+		alert(messages.WRONG_EMAIL);
 		return;
 	}
 	// check if the user found in database => fetch api in here
-	var userCheck = users.find(
+	let userCheck = users.find(
 		(user) =>
 			user.email === emailInputLogin.value &&
 			user.password === passwordLoginField.value
@@ -113,7 +106,7 @@ loginForm.addEventListener('submit', function (event) {
 		userTasks.loadListTasks();
 		userTasks.renderListTasks(userTasks.listTasks);
 	} else {
-		alert('User not found or Email/Password incorrect!');
+		alert(messages.USER_NOT_FOUND);
 		emailInputLogin.value = valueConstant.NULL;
 		passwordLoginField.value = valueConstant.NULL;
 		return;
@@ -134,7 +127,7 @@ window.addEventListener('DOMContentLoaded', function () {
 		// loading current user & toDoTask ( when using react => useEffect())
 		user = rememberedUser || currentSessionUser;
 		checkUserIsOnline(user);
-		userTasks = new userTasksManager(user);
+		userTasks = new manageUserTasks(user);
 		userTasks.loadListTasks();
 		userTasks.renderListTasks(userTasks.listTasks);
 	} else {
@@ -143,7 +136,7 @@ window.addEventListener('DOMContentLoaded', function () {
 });
 
 function loadUsers() {
-	var users = JSON.parse(localStorage.getItem('users') || '[]');
+	let users = JSON.parse(localStorage.getItem('users') || '[]');
 	return users;
 }
 
@@ -159,19 +152,19 @@ function checkUserIsOnline(user = valueConstant.NULL) {
 	}
 }
 
-class userTasksManager {
+class manageUserTasks {
 	constructor(user) {
 		this.user = user
 	}
 }
 
-userTasksManager.prototype.loadListTasks = function () {
-	var listTasks = JSON.parse(localStorage.getItem('listTasks') || '[]');
+manageUserTasks.prototype.loadListTasks = function () {
+	let listTasks = JSON.parse(localStorage.getItem('listTasks') || '[]');
 	this.listTasks = listTasks;
 };
 
-userTasksManager.prototype.addTask = function (todoValue) {
-	var newTask = {
+manageUserTasks.prototype.addTask = function (todoValue) {
+	let newTask = {
 		id: generateUID(),
 		name: todoValue,
 		user_id: user.id,
@@ -188,9 +181,11 @@ userTasksManager.prototype.addTask = function (todoValue) {
 	this.renderListTasks(this.listTasks);
 };
 
-userTasksManager.prototype.renderListTasks = function (listTasks) {
-	if (listTasks) {
-		var tasks = listTasks.filter((task) => task.user_id === user.id);
+manageUserTasks.prototype.renderListTasks = function (listTasks) {
+	let tasks = listTasks.filter((task) => task.user_id === user.id);
+	if (!listTasks) {
+		alert(messages.NO_TASK_HERE);
+		return;
 	}
 	pendingTasksCount.textContent = tasks?.length || 0;
 	if (tasks?.length > 0) {
@@ -215,12 +210,12 @@ userTasksManager.prototype.renderListTasks = function (listTasks) {
 			.join(valueConstant.NULL);
 		deleteAllTasksButton.classList.add(valueConstant.ACTIVE);
 	} else {
-		todoList.innerHTML = `Nothing to show here. Please add task`;
+		todoList.innerHTML = messages.NO_TASK_HERE;
 		deleteAllTasksButton.classList.remove(valueConstant.ACTIVE);
 	}
 };
 
-userTasksManager.prototype.editTask = function (id) {
+manageUserTasks.prototype.editTask = function (id) {
 	const todoItem = $(`.id-${id}`);
 	const task = this.listTasks.find((task) => task.id === id);
 	if (task) {
@@ -244,7 +239,7 @@ userTasksManager.prototype.editTask = function (id) {
 	}
 };
 
-userTasksManager.prototype.deleteTask = function (id) {
+manageUserTasks.prototype.deleteTask = function (id) {
 	const updateListTasks = this.listTasks.filter((task) => task.id !== id);
 	if (updateListTasks) {
 		localStorage.setItem('listTasks', JSON.stringify(updateListTasks));
@@ -253,9 +248,9 @@ userTasksManager.prototype.deleteTask = function (id) {
 	}
 };
 
-userTasksManager.prototype.deleteAllTask = function () {
+manageUserTasks.prototype.deleteAllTask = function () {
 	if (confirm('Delete All?')) {
-		var updatedListTasks = this.listTasks.filter(
+		let updatedListTasks = this.listTasks.filter(
 			(task) => task.user_id !== user.id
 		);
 		if (updatedListTasks) {
@@ -270,7 +265,7 @@ userTasksManager.prototype.deleteAllTask = function () {
 	}
 };
 
-userTasksManager.prototype.toggleCompleted = function (id) {
+manageUserTasks.prototype.toggleCompleted = function (id) {
 	const task = this.listTasks.find((task) => task.id === id);
 	if (task) {
 		if (task.completed === filterState.UNDONE) {

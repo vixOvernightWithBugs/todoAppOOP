@@ -38,3 +38,16 @@ const valueConstant = Object.freeze({
 	FLEX: 'flex',
 	ACTIVE: 'active',
 });
+const messages = Object.freeze({
+	PASSWORD_DOES_NOT_MATCH: 'Password does not match. Please re-enter the password!',
+	INVALID_EMAIL: 'Please enter a valid email address. Email must be in the format name@domain.com.',
+	EMAIL_IS_ALREADY_REGISTERED: 'Already have this email registered!',
+	REGISTER_SUCCESSFULLY: 'Register successfully!',
+	WRONG_EMAIL:'Please enter correctly email!',
+	USER_NOT_FOUND: 'User not found or Email/Password incorrect!',
+	NO_TASK_HERE: 'Nothing to show here. Please add task',
+});
+
+const regexPattern = Object.freeze({
+	EMAIL: /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+});
